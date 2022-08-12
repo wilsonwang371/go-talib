@@ -32,17 +32,24 @@ const (
 	T3MA
 )
 
+type TALib struct {
+}
+
+func NewTALib() *TALib {
+	return &TALib{}
+}
+
 /* Overlap Studies */
 
 // BBands - Bollinger Bands
 // upperband, middleband, lowerband = BBands(close, timeperiod=5, nbdevup=2, nbdevdn=2, matype=0)
-func BBands(inReal []float64, inTimePeriod int, inNbDevUp float64, inNbDevDn float64, inMAType MaType) ([]float64, []float64, []float64) {
+func (t *TALib) BBands(inReal []float64, inTimePeriod int, inNbDevUp float64, inNbDevDn float64, inMAType MaType) ([]float64, []float64, []float64) {
 
 	outRealUpperBand := make([]float64, len(inReal))
-	outRealMiddleBand := Ma(inReal, inTimePeriod, inMAType)
+	outRealMiddleBand := t.Ma(inReal, inTimePeriod, inMAType)
 	outRealLowerBand := make([]float64, len(inReal))
 
-	tempBuffer2 := StdDev(inReal, inTimePeriod, 1.0)
+	tempBuffer2 := t.StdDev(inReal, inTimePeriod, 1.0)
 
 	if inNbDevUp == inNbDevDn {
 
@@ -87,11 +94,11 @@ func BBands(inReal []float64, inTimePeriod int, inNbDevUp float64, inNbDevDn flo
 }
 
 // Dema - Double Exponential Moving Average
-func Dema(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Dema(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
-	firstEMA := Ema(inReal, inTimePeriod)
-	secondEMA := Ema(firstEMA[inTimePeriod-1:], inTimePeriod)
+	firstEMA := t.Ema(inReal, inTimePeriod)
+	secondEMA := t.Ema(firstEMA[inTimePeriod-1:], inTimePeriod)
 
 	for outIdx, secondEMAIdx := (inTimePeriod*2)-2, inTimePeriod-1; outIdx < len(inReal); outIdx, secondEMAIdx = outIdx+1, secondEMAIdx+1 {
 		outReal[outIdx] = (2.0 * firstEMA[outIdx]) - secondEMA[secondEMAIdx]
@@ -101,7 +108,7 @@ func Dema(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Ema - Exponential Moving Average
-func ema(inReal []float64, inTimePeriod int, k1 float64) []float64 {
+func (t *TALib) ema(inReal []float64, inTimePeriod int, k1 float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -135,15 +142,15 @@ func ema(inReal []float64, inTimePeriod int, k1 float64) []float64 {
 }
 
 // Ema - Exponential Moving Average
-func Ema(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Ema(inReal []float64, inTimePeriod int) []float64 {
 
 	k := 2.0 / float64(inTimePeriod+1)
-	outReal := ema(inReal, inTimePeriod, k)
+	outReal := t.ema(inReal, inTimePeriod, k)
 	return outReal
 }
 
 // HtTrendline - Hilbert Transform - Instantaneous Trendline (lookback=63)
-func HtTrendline(inReal []float64) []float64 {
+func (t *TALib) HtTrendline(inReal []float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 	a := 0.0962
@@ -380,7 +387,7 @@ func HtTrendline(inReal []float64) []float64 {
 }
 
 // Kama - Kaufman Adaptive Moving Average
-func Kama(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Kama(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -459,7 +466,7 @@ func Kama(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Ma - Moving average
-func Ma(inReal []float64, inTimePeriod int, inMAType MaType) []float64 {
+func (t *TALib) Ma(inReal []float64, inTimePeriod int, inMAType MaType) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -470,29 +477,29 @@ func Ma(inReal []float64, inTimePeriod int, inMAType MaType) []float64 {
 
 	switch inMAType {
 	case SMA:
-		outReal = Sma(inReal, inTimePeriod)
+		outReal = t.Sma(inReal, inTimePeriod)
 	case EMA:
-		outReal = Ema(inReal, inTimePeriod)
+		outReal = t.Ema(inReal, inTimePeriod)
 	case WMA:
-		outReal = Wma(inReal, inTimePeriod)
+		outReal = t.Wma(inReal, inTimePeriod)
 	case DEMA:
-		outReal = Dema(inReal, inTimePeriod)
+		outReal = t.Dema(inReal, inTimePeriod)
 	case TEMA:
-		outReal = Tema(inReal, inTimePeriod)
+		outReal = t.Tema(inReal, inTimePeriod)
 	case TRIMA:
-		outReal = Trima(inReal, inTimePeriod)
+		outReal = t.Trima(inReal, inTimePeriod)
 	case KAMA:
-		outReal = Kama(inReal, inTimePeriod)
+		outReal = t.Kama(inReal, inTimePeriod)
 	case MAMA:
-		outReal, _ = Mama(inReal, 0.5, 0.05)
+		outReal, _ = t.Mama(inReal, 0.5, 0.05)
 	case T3MA:
-		outReal = T3(inReal, inTimePeriod, 0.7)
+		outReal = t.T3(inReal, inTimePeriod, 0.7)
 	}
 	return outReal
 }
 
 // Mama - MESA Adaptive Moving Average (lookback=32)
-func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64, []float64) {
+func (t *TALib) Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64, []float64) {
 
 	outMAMA := make([]float64, len(inReal))
 	outFAMA := make([]float64, len(inReal))
@@ -768,7 +775,7 @@ func Mama(inReal []float64, inFastLimit float64, inSlowLimit float64) ([]float64
 }
 
 // MaVp - Moving average with variable period
-func MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod int, inMAType MaType) []float64 {
+func (t *TALib) MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod int, inMAType MaType) []float64 {
 
 	outReal := make([]float64, len(inReal))
 	startIdx := inMaxPeriod - 1
@@ -788,7 +795,7 @@ func MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod in
 	for i := startIdx; i < outputSize; i++ {
 		curPeriod := int(localPeriodArray[i])
 		if curPeriod != 0 {
-			localOutputArray := Ma(inReal, curPeriod, inMAType)
+			localOutputArray := t.Ma(inReal, curPeriod, inMAType)
 			outReal[i] = localOutputArray[i]
 			for j := i + 1; j < outputSize; j++ {
 				if localPeriodArray[j] == float64(curPeriod) {
@@ -802,7 +809,7 @@ func MaVp(inReal []float64, inPeriods []float64, inMinPeriod int, inMaxPeriod in
 }
 
 // MidPoint - MidPoint over period
-func MidPoint(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) MidPoint(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 	nbInitialElementNeeded := inTimePeriod - 1
@@ -831,7 +838,7 @@ func MidPoint(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // MidPrice - Midpoint Price over period
-func MidPrice(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func (t *TALib) MidPrice(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inHigh))
 
@@ -863,7 +870,7 @@ func MidPrice(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 
 // Sar - Parabolic SAR
 // real = Sar(high, low, acceleration=0, maximum=0)
-func Sar(inHigh []float64, inLow []float64, inAcceleration float64, inMaximum float64) []float64 {
+func (t *TALib) Sar(inHigh []float64, inLow []float64, inAcceleration float64, inMaximum float64) []float64 {
 
 	outReal := make([]float64, len(inHigh))
 
@@ -872,7 +879,7 @@ func Sar(inHigh []float64, inLow []float64, inAcceleration float64, inMaximum fl
 		af, inAcceleration = inMaximum, inMaximum
 	}
 
-	epTemp := MinusDM(inHigh, inLow, 1)
+	epTemp := t.MinusDM(inHigh, inLow, 1)
 	isLong := 1
 	if epTemp[1] > 0 {
 		isLong = 0
@@ -985,7 +992,7 @@ func Sar(inHigh []float64, inLow []float64, inAcceleration float64, inMaximum fl
 
 // SarExt - Parabolic SAR - Extended
 // real = SAREXT(high, low, startvalue=0, offsetonreverse=0, accelerationinitlong=0, accelerationlong=0, accelerationmaxlong=0, accelerationinitshort=0, accelerationshort=0, accelerationmaxshort=0)
-func SarExt(inHigh []float64, inLow []float64,
+func (t *TALib) SarExt(inHigh []float64, inLow []float64,
 	inStartValue float64,
 	inOffsetOnReverse float64,
 	inAccelerationInitLong float64,
@@ -1018,7 +1025,7 @@ func SarExt(inHigh []float64, inLow []float64,
 
 	isLong := 0
 	if inStartValue == 0 {
-		epTemp := MinusDM(inHigh, inLow, 1)
+		epTemp := t.MinusDM(inHigh, inLow, 1)
 		if epTemp[1] > 0 {
 			isLong = 0
 		} else {
@@ -1148,7 +1155,7 @@ func SarExt(inHigh []float64, inLow []float64,
 }
 
 // Sma - Simple Moving Average
-func Sma(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Sma(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -1179,7 +1186,7 @@ func Sma(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // T3 - Triple Exponential Moving Average (T3) (lookback=6*inTimePeriod)
-func T3(inReal []float64, inTimePeriod int, inVFactor float64) []float64 {
+func (t *TALib) T3(inReal []float64, inTimePeriod int, inVFactor float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -1273,12 +1280,12 @@ func T3(inReal []float64, inTimePeriod int, inVFactor float64) []float64 {
 }
 
 // Tema - Triple Exponential Moving Average
-func Tema(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Tema(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
-	firstEMA := Ema(inReal, inTimePeriod)
-	secondEMA := Ema(firstEMA[inTimePeriod-1:], inTimePeriod)
-	thirdEMA := Ema(secondEMA[inTimePeriod-1:], inTimePeriod)
+	firstEMA := t.Ema(inReal, inTimePeriod)
+	secondEMA := t.Ema(firstEMA[inTimePeriod-1:], inTimePeriod)
+	thirdEMA := t.Ema(secondEMA[inTimePeriod-1:], inTimePeriod)
 
 	outIdx := (inTimePeriod * 3) - 3
 	secondEMAIdx := (inTimePeriod * 2) - 2
@@ -1295,7 +1302,7 @@ func Tema(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Trima - Triangular Moving Average
-func Trima(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Trima(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -1400,7 +1407,7 @@ func Trima(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Wma - Weighted Moving Average
-func Wma(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Wma(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -1443,7 +1450,7 @@ func Wma(inReal []float64, inTimePeriod int) []float64 {
 /* Momentum Indicators */
 
 // Adx - Average Directional Movement Index
-func Adx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) Adx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -1569,11 +1576,11 @@ func Adx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 }
 
 // AdxR - Average Directional Movement Index Rating
-func AdxR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) AdxR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 	startIdx := (2 * inTimePeriod) - 1
-	tmpadx := Adx(inHigh, inLow, inClose, inTimePeriod)
+	tmpadx := t.Adx(inHigh, inLow, inClose, inTimePeriod)
 	i := startIdx
 	j := startIdx + inTimePeriod - 1
 	for outIdx := startIdx + inTimePeriod - 1; outIdx < len(inClose); outIdx, i, j = outIdx+1, i+1, j+1 {
@@ -1583,13 +1590,13 @@ func AdxR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int
 }
 
 // Apo - Absolute Price Oscillator
-func Apo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) []float64 {
+func (t *TALib) Apo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) []float64 {
 
 	if inSlowPeriod < inFastPeriod {
 		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
 	}
-	tempBuffer := Ma(inReal, inFastPeriod, inMAType)
-	outReal := Ma(inReal, inSlowPeriod, inMAType)
+	tempBuffer := t.Ma(inReal, inFastPeriod, inMAType)
+	outReal := t.Ma(inReal, inSlowPeriod, inMAType)
 	for i := inSlowPeriod - 1; i < len(inReal); i++ {
 		outReal[i] = tempBuffer[i] - outReal[i]
 	}
@@ -1599,7 +1606,7 @@ func Apo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) 
 
 // Aroon - Aroon
 // aroondown, aroonup = AROON(high, low, timeperiod=14)
-func Aroon(inHigh []float64, inLow []float64, inTimePeriod int) ([]float64, []float64) {
+func (t *TALib) Aroon(inHigh []float64, inLow []float64, inTimePeriod int) ([]float64, []float64) {
 
 	outAroonUp := make([]float64, len(inHigh))
 	outAroonDown := make([]float64, len(inHigh))
@@ -1660,7 +1667,7 @@ func Aroon(inHigh []float64, inLow []float64, inTimePeriod int) ([]float64, []fl
 }
 
 // AroonOsc - Aroon Oscillator
-func AroonOsc(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func (t *TALib) AroonOsc(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inHigh))
 
@@ -1721,7 +1728,7 @@ func AroonOsc(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 }
 
 // Bop - Balance Of Power
-func Bop(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64) []float64 {
+func (t *TALib) Bop(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -1738,7 +1745,7 @@ func Bop(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64)
 }
 
 // Cmo - Chande Momentum Oscillator
-func Cmo(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Cmo(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -1818,7 +1825,7 @@ func Cmo(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Cci - Commodity Channel Index
-func Cci(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) Cci(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -1873,7 +1880,7 @@ func Cci(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 }
 
 // Dx - Directional Movement Index
-func Dx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) Dx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -1979,7 +1986,7 @@ func Dx(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) 
 
 // Macd - Moving Average Convergence/Divergence
 // unstable period ~= 100
-func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod int) ([]float64, []float64, []float64) {
+func (t *TALib) Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod int) ([]float64, []float64, []float64) {
 
 	if inSlowPeriod < inFastPeriod {
 		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
@@ -2004,8 +2011,8 @@ func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod i
 	lookbackTotal := lookbackSignal
 	lookbackTotal += (inSlowPeriod - 1)
 
-	fastEMABuffer := ema(inReal, inFastPeriod, k2)
-	slowEMABuffer := ema(inReal, inSlowPeriod, k1)
+	fastEMABuffer := t.ema(inReal, inFastPeriod, k2)
+	slowEMABuffer := t.ema(inReal, inSlowPeriod, k1)
 	for i := 0; i < len(fastEMABuffer); i++ {
 		fastEMABuffer[i] = fastEMABuffer[i] - slowEMABuffer[i]
 	}
@@ -2014,7 +2021,7 @@ func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod i
 	for i := lookbackTotal - 1; i < len(fastEMABuffer); i++ {
 		outMACD[i] = fastEMABuffer[i]
 	}
-	outMACDSignal := ema(outMACD, inSignalPeriod, (2.0 / float64(inSignalPeriod+1)))
+	outMACDSignal := t.ema(outMACD, inSignalPeriod, (2.0 / float64(inSignalPeriod+1)))
 
 	outMACDHist := make([]float64, len(inReal))
 	for i := lookbackTotal; i < len(outMACDHist); i++ {
@@ -2026,7 +2033,7 @@ func Macd(inReal []float64, inFastPeriod int, inSlowPeriod int, inSignalPeriod i
 
 // MacdExt - MACD with controllable MA type
 // unstable period ~= 100
-func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeriod int, inSlowMAType MaType, inSignalPeriod int, inSignalMAType MaType) ([]float64, []float64, []float64) {
+func (t *TALib) MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeriod int, inSlowMAType MaType, inSignalPeriod int, inSignalMAType MaType) ([]float64, []float64, []float64) {
 
 	lookbackLargest := 0
 	if inFastPeriod < inSlowPeriod {
@@ -2040,14 +2047,14 @@ func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeri
 	outMACDSignal := make([]float64, len(inReal))
 	outMACDHist := make([]float64, len(inReal))
 
-	slowMABuffer := Ma(inReal, inSlowPeriod, inSlowMAType)
-	fastMABuffer := Ma(inReal, inFastPeriod, inFastMAType)
+	slowMABuffer := t.Ma(inReal, inSlowPeriod, inSlowMAType)
+	fastMABuffer := t.Ma(inReal, inFastPeriod, inFastMAType)
 	tempBuffer1 := make([]float64, len(inReal))
 
 	for i := 0; i < len(slowMABuffer); i++ {
 		tempBuffer1[i] = fastMABuffer[i] - slowMABuffer[i]
 	}
-	tempBuffer2 := Ma(tempBuffer1, inSignalPeriod, inSignalMAType)
+	tempBuffer2 := t.Ma(tempBuffer1, inSignalPeriod, inSignalMAType)
 
 	for i := lookbackTotal; i < len(outMACDHist); i++ {
 		outMACD[i] = tempBuffer1[i]
@@ -2060,12 +2067,12 @@ func MacdExt(inReal []float64, inFastPeriod int, inFastMAType MaType, inSlowPeri
 
 // MacdFix - MACD Fix 12/26
 // unstable period ~= 100
-func MacdFix(inReal []float64, inSignalPeriod int) ([]float64, []float64, []float64) {
-	return Macd(inReal, 0, 0, inSignalPeriod)
+func (t *TALib) MacdFix(inReal []float64, inSignalPeriod int) ([]float64, []float64, []float64) {
+	return t.Macd(inReal, 0, 0, inSignalPeriod)
 }
 
 // MinusDI - Minus Directional Indicator
-func MinusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) MinusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -2222,7 +2229,7 @@ func MinusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod 
 }
 
 // MinusDM - Minus Directional Movement
-func MinusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func (t *TALib) MinusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inHigh))
 
@@ -2312,7 +2319,7 @@ func MinusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 }
 
 // Mfi - Money Flow Index
-func Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64, inTimePeriod int) []float64 {
+func (t *TALib) Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 	mflowIdx := 0
@@ -2422,7 +2429,7 @@ func Mfi(inHigh []float64, inLow []float64, inClose []float64, inVolume []float6
 }
 
 // Mom - Momentum
-func Mom(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Mom(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -2436,7 +2443,7 @@ func Mom(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // PlusDI - Plus Directional Indicator
-func PlusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) PlusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -2593,7 +2600,7 @@ func PlusDI(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod i
 }
 
 // PlusDM - Plus Directional Movement
-func PlusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
+func (t *TALib) PlusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inHigh))
 
@@ -2683,13 +2690,13 @@ func PlusDM(inHigh []float64, inLow []float64, inTimePeriod int) []float64 {
 }
 
 // Ppo - Percentage Price Oscillator
-func Ppo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) []float64 {
+func (t *TALib) Ppo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) []float64 {
 
 	if inSlowPeriod < inFastPeriod {
 		inSlowPeriod, inFastPeriod = inFastPeriod, inSlowPeriod
 	}
-	tempBuffer := Ma(inReal, inFastPeriod, inMAType)
-	outReal := Ma(inReal, inSlowPeriod, inMAType)
+	tempBuffer := t.Ma(inReal, inFastPeriod, inMAType)
+	outReal := t.Ma(inReal, inSlowPeriod, inMAType)
 
 	for i := inSlowPeriod - 1; i < len(inReal); i++ {
 		tempReal := outReal[i]
@@ -2704,7 +2711,7 @@ func Ppo(inReal []float64, inFastPeriod int, inSlowPeriod int, inMAType MaType) 
 }
 
 // Rocp - Rate of change Percentage: (price-prevPrice)/prevPrice
-func Rocp(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Rocp(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -2732,7 +2739,7 @@ func Rocp(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Roc - Rate of change : ((price/prevPrice)-1)*100
-func Roc(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Roc(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -2756,7 +2763,7 @@ func Roc(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Rocr - Rate of change ratio: (price/prevPrice)
-func Rocr(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Rocr(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -2780,7 +2787,7 @@ func Rocr(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Rocr100 - Rate of change ratio 100 scale: (price/prevPrice)*100
-func Rocr100(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Rocr100(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -2804,7 +2811,7 @@ func Rocr100(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Rsi - Relative strength index
-func Rsi(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Rsi(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -2894,7 +2901,7 @@ func Rsi(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Stoch - Stochastic
-func Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod int, inSlowKPeriod int, inSlowKMAType MaType, inSlowDPeriod int, inSlowDMAType MaType) ([]float64, []float64) {
+func (t *TALib) Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod int, inSlowKPeriod int, inSlowKMAType MaType, inSlowDPeriod int, inSlowDMAType MaType) ([]float64, []float64) {
 
 	outSlowK := make([]float64, len(inClose))
 	outSlowD := make([]float64, len(inClose))
@@ -2960,8 +2967,8 @@ func Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod i
 		today++
 	}
 
-	tempBuffer1 := Ma(tempBuffer, inSlowKPeriod, inSlowKMAType)
-	tempBuffer2 := Ma(tempBuffer1, inSlowDPeriod, inSlowDMAType)
+	tempBuffer1 := t.Ma(tempBuffer, inSlowKPeriod, inSlowKMAType)
+	tempBuffer2 := t.Ma(tempBuffer1, inSlowDPeriod, inSlowDMAType)
 	//for i, j := lookbackK, lookbackTotal; j < len(inClose); i, j = i+1, j+1 {
 	for i, j := lookbackDSlow+lookbackKSlow, lookbackTotal; j < len(inClose); i, j = i+1, j+1 {
 		outSlowK[j] = tempBuffer1[i]
@@ -2972,7 +2979,7 @@ func Stoch(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod i
 }
 
 // StochF - Stochastic Fast
-func StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
+func (t *TALib) StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
 
 	outFastK := make([]float64, len(inClose))
 	outFastD := make([]float64, len(inClose))
@@ -3040,7 +3047,7 @@ func StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod 
 		today++
 	}
 
-	tempBuffer1 := Ma(tempBuffer, inFastDPeriod, inFastDMAType)
+	tempBuffer1 := t.Ma(tempBuffer, inFastDPeriod, inFastDMAType)
 	for i, j := lookbackFastD, lookbackTotal; j < len(inClose); i, j = i+1, j+1 {
 		outFastK[j] = tempBuffer[i]
 		outFastD[j] = tempBuffer1[i]
@@ -3050,7 +3057,7 @@ func StochF(inHigh []float64, inLow []float64, inClose []float64, inFastKPeriod 
 }
 
 // StochRsi - Stochastic Relative Strength Index
-func StochRsi(inReal []float64, inTimePeriod int, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
+func (t *TALib) StochRsi(inReal []float64, inTimePeriod int, inFastKPeriod int, inFastDPeriod int, inFastDMAType MaType) ([]float64, []float64) {
 
 	outFastK := make([]float64, len(inReal))
 	outFastD := make([]float64, len(inReal))
@@ -3058,8 +3065,8 @@ func StochRsi(inReal []float64, inTimePeriod int, inFastKPeriod int, inFastDPeri
 	lookbackSTOCHF := (inFastKPeriod - 1) + (inFastDPeriod - 1)
 	lookbackTotal := inTimePeriod + lookbackSTOCHF
 	startIdx := lookbackTotal
-	tempRSIBuffer := Rsi(inReal, inTimePeriod)
-	tempk, tempd := StochF(tempRSIBuffer, tempRSIBuffer, tempRSIBuffer, inFastKPeriod, inFastDPeriod, inFastDMAType)
+	tempRSIBuffer := t.Rsi(inReal, inTimePeriod)
+	tempk, tempd := t.StochF(tempRSIBuffer, tempRSIBuffer, tempRSIBuffer, inFastKPeriod, inFastDPeriod, inFastDMAType)
 
 	for i := startIdx; i < len(inReal); i++ {
 		outFastK[i] = tempk[i]
@@ -3070,12 +3077,12 @@ func StochRsi(inReal []float64, inTimePeriod int, inFastKPeriod int, inFastDPeri
 }
 
 //Trix - 1-day Rate-Of-Change (ROC) of a Triple Smooth EMA
-func Trix(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Trix(inReal []float64, inTimePeriod int) []float64 {
 
-	tmpReal := Ema(inReal, inTimePeriod)
-	tmpReal = Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
-	tmpReal = Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
-	tmpReal = Roc(tmpReal, 1)
+	tmpReal := t.Ema(inReal, inTimePeriod)
+	tmpReal = t.Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
+	tmpReal = t.Ema(tmpReal[inTimePeriod-1:], inTimePeriod)
+	tmpReal = t.Roc(tmpReal, 1)
 
 	outReal := make([]float64, len(inReal))
 	for i, j := inTimePeriod, ((inTimePeriod-1)*3)+1; j < len(outReal); i, j = i+1, j+1 {
@@ -3086,7 +3093,7 @@ func Trix(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // UltOsc - Ultimate Oscillator
-func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 int, inTimePeriod2 int, inTimePeriod3 int) []float64 {
+func (t *TALib) UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 int, inTimePeriod2 int, inTimePeriod3 int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -3336,7 +3343,7 @@ func UltOsc(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod1 
 }
 
 // WillR - Williams' %R
-func WillR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) WillR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 	nbInitialElementNeeded := (inTimePeriod - 1)
@@ -3406,7 +3413,7 @@ func WillR(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod in
 /* Volume Indicators */
 
 // Ad - Chaikin A/D Line
-func Ad(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64) []float64 {
+func (t *TALib) Ad(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -3432,7 +3439,7 @@ func Ad(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64
 }
 
 // AdOsc - Chaikin A/D Oscillator
-func AdOsc(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64, inFastPeriod int, inSlowPeriod int) []float64 {
+func (t *TALib) AdOsc(inHigh []float64, inLow []float64, inClose []float64, inVolume []float64, inFastPeriod int, inSlowPeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -3498,7 +3505,7 @@ func AdOsc(inHigh []float64, inLow []float64, inClose []float64, inVolume []floa
 }
 
 // Obv - On Balance Volume
-func Obv(inReal []float64, inVolume []float64) []float64 {
+func (t *TALib) Obv(inReal []float64, inVolume []float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 	startIdx := 0
@@ -3522,7 +3529,7 @@ func Obv(inReal []float64, inVolume []float64) []float64 {
 /* Volatility Indicators */
 
 // Atr - Average True Range
-func Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -3533,14 +3540,14 @@ func Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 	}
 
 	if inTimePeriod <= 1 {
-		return TRange(inHigh, inLow, inClose)
+		return t.TRange(inHigh, inLow, inClose)
 	}
 
 	outIdx := inTimePeriod
 	today := inTimePeriod + 1
 
-	tr := TRange(inHigh, inLow, inClose)
-	prevATRTemp := Sma(tr, inTimePeriod)
+	tr := t.TRange(inHigh, inLow, inClose)
+	prevATRTemp := t.Sma(tr, inTimePeriod)
 	prevATR := prevATRTemp[inTimePeriod]
 	outReal[inTimePeriod] = prevATR
 
@@ -3556,7 +3563,7 @@ func Atr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int)
 }
 
 // Natr - Normalized Average True Range
-func Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
+func (t *TALib) Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -3565,15 +3572,15 @@ func Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int
 	}
 
 	if inTimePeriod <= 1 {
-		return TRange(inHigh, inLow, inClose)
+		return t.TRange(inHigh, inLow, inClose)
 	}
 
 	inTimePeriodF := float64(inTimePeriod)
 	outIdx := inTimePeriod
 	today := inTimePeriod
 
-	tr := TRange(inHigh, inLow, inClose)
-	prevATRTemp := Sma(tr, inTimePeriod)
+	tr := t.TRange(inHigh, inLow, inClose)
+	prevATRTemp := t.Sma(tr, inTimePeriod)
 	prevATR := prevATRTemp[inTimePeriod]
 
 	tempValue := inClose[today]
@@ -3600,7 +3607,7 @@ func Natr(inHigh []float64, inLow []float64, inClose []float64, inTimePeriod int
 }
 
 // TRange - True Range
-func TRange(inHigh []float64, inLow []float64, inClose []float64) []float64 {
+func (t *TALib) TRange(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 	outReal := make([]float64, len(inClose))
 
@@ -3631,7 +3638,7 @@ func TRange(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 /* Price Transform */
 
 // AvgPrice - Average Price (o+h+l+c)/4
-func AvgPrice(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64) []float64 {
+func (t *TALib) AvgPrice(inOpen []float64, inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 	outReal := make([]float64, len(inClose))
 	outIdx := 0
@@ -3645,7 +3652,7 @@ func AvgPrice(inOpen []float64, inHigh []float64, inLow []float64, inClose []flo
 }
 
 // MedPrice - Median Price (h+l)/2
-func MedPrice(inHigh []float64, inLow []float64) []float64 {
+func (t *TALib) MedPrice(inHigh []float64, inLow []float64) []float64 {
 
 	outReal := make([]float64, len(inHigh))
 	outIdx := 0
@@ -3659,7 +3666,7 @@ func MedPrice(inHigh []float64, inLow []float64) []float64 {
 }
 
 // TypPrice - Typical Price (h+l+c)/3
-func TypPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
+func (t *TALib) TypPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 	outReal := make([]float64, len(inClose))
 	outIdx := 0
@@ -3673,7 +3680,7 @@ func TypPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 }
 
 // WclPrice - Weighted Close Price
-func WclPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
+func (t *TALib) WclPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 
 	outReal := make([]float64, len(inClose))
 	outIdx := 0
@@ -3689,7 +3696,7 @@ func WclPrice(inHigh []float64, inLow []float64, inClose []float64) []float64 {
 /* Cycle Indicators */
 
 // HtDcPeriod - Hilbert Transform - Dominant Cycle Period (lookback=32)
-func HtDcPeriod(inReal []float64) []float64 {
+func (t *TALib) HtDcPeriod(inReal []float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -3902,7 +3909,7 @@ func HtDcPeriod(inReal []float64) []float64 {
 }
 
 // HtDcPhase - Hilbert Transform - Dominant Cycle Phase (lookback=63)
-func HtDcPhase(inReal []float64) []float64 {
+func (t *TALib) HtDcPhase(inReal []float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 	a := 0.0962
@@ -4161,7 +4168,7 @@ func HtDcPhase(inReal []float64) []float64 {
 }
 
 // HtPhasor - Hibert Transform - Phasor Components (lookback=32)
-func HtPhasor(inReal []float64) ([]float64, []float64) {
+func (t *TALib) HtPhasor(inReal []float64) ([]float64, []float64) {
 
 	outInPhase := make([]float64, len(inReal))
 	outQuadrature := make([]float64, len(inReal))
@@ -4380,7 +4387,7 @@ func HtPhasor(inReal []float64) ([]float64, []float64) {
 }
 
 // HtSine - Hilbert Transform - SineWave (lookback=63)
-func HtSine(inReal []float64) ([]float64, []float64) {
+func (t *TALib) HtSine(inReal []float64) ([]float64, []float64) {
 
 	outSine := make([]float64, len(inReal))
 	outLeadSine := make([]float64, len(inReal))
@@ -4642,7 +4649,7 @@ func HtSine(inReal []float64) ([]float64, []float64) {
 }
 
 // HtTrendMode - Hilbert Transform - Trend vs Cycle Mode (lookback=63)
-func HtTrendMode(inReal []float64) []float64 {
+func (t *TALib) HtTrendMode(inReal []float64) []float64 {
 
 	outReal := make([]float64, len(inReal))
 	a := 0.0962
@@ -4952,7 +4959,7 @@ func HtTrendMode(inReal []float64) []float64 {
 /* Statistic Functions */
 
 // Beta - Beta
-func Beta(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
+func (t *TALib) Beta(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal0))
 
@@ -5047,7 +5054,7 @@ func Beta(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
 }
 
 // Correl - Pearson's Correlation Coefficient (r)
-func Correl(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
+func (t *TALib) Correl(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal0))
 
@@ -5105,7 +5112,7 @@ func Correl(inReal0 []float64, inReal1 []float64, inTimePeriod int) []float64 {
 }
 
 // LinearReg - Linear Regression
-func LinearReg(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) LinearReg(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5144,7 +5151,7 @@ func LinearReg(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // LinearRegAngle - Linear Regression Angle
-func LinearRegAngle(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) LinearRegAngle(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5182,7 +5189,7 @@ func LinearRegAngle(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // LinearRegIntercept - Linear Regression Intercept
-func LinearRegIntercept(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) LinearRegIntercept(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5220,7 +5227,7 @@ func LinearRegIntercept(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // LinearRegSlope - Linear Regression Slope
-func LinearRegSlope(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) LinearRegSlope(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5257,9 +5264,9 @@ func LinearRegSlope(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // StdDev - Standard Deviation
-func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
+func (t *TALib) StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
 
-	outReal := Var(inReal, inTimePeriod)
+	outReal := t.Var(inReal, inTimePeriod)
 
 	if inNbDev != 1.0 {
 		for i := 0; i < len(inReal); i++ {
@@ -5284,7 +5291,7 @@ func StdDev(inReal []float64, inTimePeriod int, inNbDev float64) []float64 {
 }
 
 // Tsf - Time Series Forecast
-func Tsf(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Tsf(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5323,7 +5330,7 @@ func Tsf(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Var - Variance
-func Var(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Var(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5366,7 +5373,7 @@ func Var(inReal []float64, inTimePeriod int) []float64 {
 /* Math Transform Functions */
 
 // Acos - Vector Trigonometric ACOS
-func Acos(inReal []float64) []float64 {
+func (t *TALib) Acos(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Acos(inReal[i])
@@ -5375,7 +5382,7 @@ func Acos(inReal []float64) []float64 {
 }
 
 // Asin - Vector Trigonometric ASIN
-func Asin(inReal []float64) []float64 {
+func (t *TALib) Asin(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Asin(inReal[i])
@@ -5384,7 +5391,7 @@ func Asin(inReal []float64) []float64 {
 }
 
 // Atan - Vector Trigonometric ATAN
-func Atan(inReal []float64) []float64 {
+func (t *TALib) Atan(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Atan(inReal[i])
@@ -5393,7 +5400,7 @@ func Atan(inReal []float64) []float64 {
 }
 
 // Ceil - Vector CEIL
-func Ceil(inReal []float64) []float64 {
+func (t *TALib) Ceil(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Ceil(inReal[i])
@@ -5402,7 +5409,7 @@ func Ceil(inReal []float64) []float64 {
 }
 
 // Cos - Vector Trigonometric COS
-func Cos(inReal []float64) []float64 {
+func (t *TALib) Cos(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Cos(inReal[i])
@@ -5411,7 +5418,7 @@ func Cos(inReal []float64) []float64 {
 }
 
 // Cosh - Vector Trigonometric COSH
-func Cosh(inReal []float64) []float64 {
+func (t *TALib) Cosh(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Cosh(inReal[i])
@@ -5420,7 +5427,7 @@ func Cosh(inReal []float64) []float64 {
 }
 
 // Exp - Vector atrithmetic EXP
-func Exp(inReal []float64) []float64 {
+func (t *TALib) Exp(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Exp(inReal[i])
@@ -5429,7 +5436,7 @@ func Exp(inReal []float64) []float64 {
 }
 
 // Floor - Vector FLOOR
-func Floor(inReal []float64) []float64 {
+func (t *TALib) Floor(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Floor(inReal[i])
@@ -5438,7 +5445,7 @@ func Floor(inReal []float64) []float64 {
 }
 
 // Ln - Vector natural log LN
-func Ln(inReal []float64) []float64 {
+func (t *TALib) Ln(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Log(inReal[i])
@@ -5447,7 +5454,7 @@ func Ln(inReal []float64) []float64 {
 }
 
 // Log10 - Vector LOG10
-func Log10(inReal []float64) []float64 {
+func (t *TALib) Log10(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Log10(inReal[i])
@@ -5456,7 +5463,7 @@ func Log10(inReal []float64) []float64 {
 }
 
 // Sin - Vector Trigonometric SIN
-func Sin(inReal []float64) []float64 {
+func (t *TALib) Sin(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Sin(inReal[i])
@@ -5465,7 +5472,7 @@ func Sin(inReal []float64) []float64 {
 }
 
 // Sinh - Vector Trigonometric SINH
-func Sinh(inReal []float64) []float64 {
+func (t *TALib) Sinh(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Sinh(inReal[i])
@@ -5474,7 +5481,7 @@ func Sinh(inReal []float64) []float64 {
 }
 
 // Sqrt - Vector SQRT
-func Sqrt(inReal []float64) []float64 {
+func (t *TALib) Sqrt(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Sqrt(inReal[i])
@@ -5483,7 +5490,7 @@ func Sqrt(inReal []float64) []float64 {
 }
 
 // Tan - Vector Trigonometric TAN
-func Tan(inReal []float64) []float64 {
+func (t *TALib) Tan(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Tan(inReal[i])
@@ -5492,7 +5499,7 @@ func Tan(inReal []float64) []float64 {
 }
 
 // Tanh - Vector Trigonometric TANH
-func Tanh(inReal []float64) []float64 {
+func (t *TALib) Tanh(inReal []float64) []float64 {
 	outReal := make([]float64, len(inReal))
 	for i := 0; i < len(inReal); i++ {
 		outReal[i] = math.Tanh(inReal[i])
@@ -5503,7 +5510,7 @@ func Tanh(inReal []float64) []float64 {
 /* Math Operator Functions */
 
 // Add - Vector arithmetic addition
-func Add(inReal0 []float64, inReal1 []float64) []float64 {
+func (t *TALib) Add(inReal0 []float64, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] + inReal1[i]
@@ -5512,7 +5519,7 @@ func Add(inReal0 []float64, inReal1 []float64) []float64 {
 }
 
 // Div - Vector arithmetic division
-func Div(inReal0 []float64, inReal1 []float64) []float64 {
+func (t *TALib) Div(inReal0 []float64, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] / inReal1[i]
@@ -5521,7 +5528,7 @@ func Div(inReal0 []float64, inReal1 []float64) []float64 {
 }
 
 // Max - Highest value over a period
-func Max(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Max(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5567,7 +5574,7 @@ func Max(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // MaxIndex - Index of highest value over a specified period
-func MaxIndex(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) MaxIndex(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5610,7 +5617,7 @@ func MaxIndex(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // Min - Lowest value over a period
-func Min(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Min(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5655,7 +5662,7 @@ func Min(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // MinIndex - Index of lowest value over a specified period
-func MinIndex(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) MinIndex(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5697,7 +5704,7 @@ func MinIndex(inReal []float64, inTimePeriod int) []float64 {
 }
 
 // MinMax - Lowest and highest values over a specified period
-func MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
+func (t *TALib) MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 
 	outMin := make([]float64, len(inReal))
 	outMax := make([]float64, len(inReal))
@@ -5757,7 +5764,7 @@ func MinMax(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 }
 
 // MinMaxIndex - Indexes of lowest and highest values over a specified period
-func MinMaxIndex(inReal []float64, inTimePeriod int) ([]float64, []float64) {
+func (t *TALib) MinMaxIndex(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 
 	outMinIdx := make([]float64, len(inReal))
 	outMaxIdx := make([]float64, len(inReal))
@@ -5817,7 +5824,7 @@ func MinMaxIndex(inReal []float64, inTimePeriod int) ([]float64, []float64) {
 }
 
 // Mult - Vector arithmetic multiply
-func Mult(inReal0 []float64, inReal1 []float64) []float64 {
+func (t *TALib) Mult(inReal0 []float64, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] * inReal1[i]
@@ -5826,7 +5833,7 @@ func Mult(inReal0 []float64, inReal1 []float64) []float64 {
 }
 
 // Sub - Vector arithmetic subtraction
-func Sub(inReal0 []float64, inReal1 []float64) []float64 {
+func (t *TALib) Sub(inReal0 []float64, inReal1 []float64) []float64 {
 	outReal := make([]float64, len(inReal0))
 	for i := 0; i < len(inReal0); i++ {
 		outReal[i] = inReal0[i] - inReal1[i]
@@ -5835,7 +5842,7 @@ func Sub(inReal0 []float64, inReal1 []float64) []float64 {
 }
 
 // Sum - Vector summation
-func Sum(inReal []float64, inTimePeriod int) []float64 {
+func (t *TALib) Sum(inReal []float64, inTimePeriod int) []float64 {
 
 	outReal := make([]float64, len(inReal))
 
@@ -5871,7 +5878,7 @@ func Sum(inReal []float64, inTimePeriod int) []float64 {
 //    NOTE: The number of Heikin-Ashi candles will always be one less than the number of provided candles, due to the fact
 //          that a previous candle is necessary to calculate the Heikin-Ashi candle, therefore the first provided candle is not considered
 //          as "current candle" in the algorithm, but only as "previous candle".
-func HeikinashiCandles(highs []float64, opens []float64, closes []float64, lows []float64) ([]float64, []float64, []float64, []float64) {
+func (t *TALib) HeikinashiCandles(highs []float64, opens []float64, closes []float64, lows []float64) ([]float64, []float64, []float64, []float64) {
 	N := len(highs)
 
 	heikinHighs := make([]float64, N)
@@ -5895,7 +5902,7 @@ func HeikinashiCandles(highs []float64, opens []float64, closes []float64, lows 
 //
 //     NOTE: Every Hlc item is defined as follows : (high + low + close) / 3
 //           It is used as AvgPrice candle.
-func Hlc3(highs []float64, lows []float64, closes []float64) []float64 {
+func (t *TALib) Hlc3(highs []float64, lows []float64, closes []float64) []float64 {
 	N := len(highs)
 	result := make([]float64, N)
 	for i := range highs {
@@ -5911,7 +5918,7 @@ func Hlc3(highs []float64, lows []float64, closes []float64) []float64 {
 //          It assumes first values are the most recent.
 //          The crossover function does not use most recent value, since usually it's not a complete candle.
 //          The second recent values and the previous are used, instead.
-func Crossover(series1 []float64, series2 []float64) bool {
+func (t *TALib) Crossover(series1 []float64, series2 []float64) bool {
 	if len(series1) < 3 || len(series2) < 3 {
 		return false
 	}
@@ -5924,7 +5931,7 @@ func Crossover(series1 []float64, series2 []float64) bool {
 // Crossunder returns true if series1 is crossing under series2.
 //
 //    NOTE: Usually this is used with Media Average Series to check if it crosses for sell signals.
-func Crossunder(series1 []float64, series2 []float64) bool {
+func (t *TALib) Crossunder(series1 []float64, series2 []float64) bool {
 	if len(series1) < 3 || len(series2) < 3 {
 		return false
 	}
@@ -5946,7 +5953,7 @@ func Crossunder(series1 []float64, series2 []float64) bool {
 //     To transform 15 minute candles in 1 hour candles you have a grouping factor = 4
 //
 //     To transform 30 minute candles in 1 hour candles you have a grouping factor = 2
-func GroupCandles(highs []float64, opens []float64, closes []float64, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error) {
+func (t *TALib) GroupCandles(highs []float64, opens []float64, closes []float64, lows []float64, groupingFactor int) ([]float64, []float64, []float64, []float64, error) {
 	N := len(highs)
 	if groupingFactor == 0 {
 		return nil, nil, nil, nil, errors.New("Grouping factor must be > 0")
