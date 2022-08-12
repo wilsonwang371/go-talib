@@ -80,7 +80,7 @@ testRand = numpy.array(%s)
 print(' '.join([str(p) for p in result]).replace('nan','0.0'))`,
 		a2s(testOpen), a2s(testHigh), a2s(testLow), a2s(testClose), a2s(testVolume), a2s(testRand), taCall)
 
-	//fmt.Println(pyprog)
+	// fmt.Println(pyprog)
 	pyOut, err := exec.Command("python", "-c", pyprog).Output()
 	ok(t, err)
 
@@ -115,7 +115,7 @@ print(' '.join([str(p) for p in result]).replace('nan','0.0'))`,
 		} else {
 			s2 = fmt.Sprintf("%.1f", round(pyResult[i])) // reduce precision for very large numbers
 		}
-		//equals(t, s1, s2)
+		// equals(t, s1, s2)
 		if s1[:len(s1)-2] != s2[:len(s2)-2] {
 			_, file, line, _ := runtime.Caller(1)
 			fmt.Printf("%s:%d:\n\tgo!: %#v\n\tpy!: %#v\n", filepath.Base(file), line, s1, s2)
